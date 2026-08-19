@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+content="width=device-width, initial-scale=1.0">
 
 <title>Desbravatur - Alfândega</title>
 
@@ -39,21 +39,13 @@ h2 {
 }
 
 #resultado {
-
   background: white;
-
   padding: 25px;
-
   border-radius: 15px;
-
   max-width: 500px;
-
   margin: 20px auto;
-
   font-size: 24px;
-
   font-weight: bold;
-
 }
 
 .sucesso {
@@ -65,27 +57,15 @@ h2 {
 }
 
 #novoScan {
-
   display: none;
-
   margin: 20px auto;
-
   padding: 18px 35px;
-
   font-size: 20px;
-
   font-weight: bold;
-
   border: none;
-
   border-radius: 12px;
-
   background: #1b7f3a;
-
   color: white;
-
-  cursor: pointer;
-
 }
 
 </style>
@@ -94,31 +74,22 @@ h2 {
 
 <body>
 
-
 <h1>✈️ DESBRAVATUR</h1>
 
 <h2>ALFÂNDEGA</h2>
 
-
 <div id="reader"></div>
 
-
 <div id="resultado">
-
 📷 Aponte para o QR Code
-
 </div>
 
-
-<button id="novoScan" onclick="novoScan()">
-
+<button id="novoScan" onclick="iniciarScanner()">
 📷 ESCANEAR PRÓXIMO
-
 </button>
 
 
 <script>
-
 
 const APPS_SCRIPT =
 "https://script.google.com/macros/s/AKfycbwFODAHRarZcpTXxwmrQDRN57RnWlis0amVqkj0zcEpB9gCHz_Ca3s28tkZBNN2aLF6sQ/exec";
@@ -126,55 +97,59 @@ const APPS_SCRIPT =
 
 let scanner = null;
 
-let lendo = true;
+let processando = false;
 
 
 /* =====================================
-   INICIAR LEITOR
+   INICIAR CÂMERA
 ===================================== */
 
 function iniciarScanner() {
 
-  lendo = true;
+  processando = false;
 
-  document.getElementById("novoScan").style.display =
-    "none";
+  document.getElementById("novoScan").style.display = "none";
 
   document.getElementById("resultado").innerHTML =
     "📷 Aponte para o QR Code";
 
   document.getElementById("resultado").className = "";
 
+  document.getElementById("reader").innerHTML = "";
 
-  scanner = new Html5QrcodeScanner(
 
-    "reader",
+  scanner = new Html5Qrcode("reader");
+
+
+  scanner.start(
+
+    { facingMode: "environment" },
 
     {
-
       fps: 10,
-
       qrbox: {
         width: 250,
         height: 250
       }
-
     },
-
-    false
-
-  );
-
-
-  scanner.render(
 
     qrLido,
 
-    function() {
-      // Ignora erros normais
+    function(errorMessage) {
+      // Ignora erros normais de procura
     }
 
-  );
+  )
+
+  .catch(function(error) {
+
+    document.getElementById("resultado").innerHTML =
+      "❌ Não foi possível acessar a câmera";
+
+    document.getElementById("resultado").className =
+      "erro";
+
+  });
 
 }
 
@@ -185,25 +160,60 @@ function iniciarScanner() {
 
 function qrLido(texto) {
 
-  if (!lendo) {
+  if (processando) {
     return;
   }
 
-  lendo = false;
+  processando = true;
 
 
   /*
-   IMPORTANTE:
-   Para a câmera imediatamente.
+  PRIMEIRO:
+  PARA A CÂMERA.
   */
 
-  scanner.clear();
+  scanner.stop()
 
+    .then(function() {
+
+      console.log("Câmera parada.");
+
+      document.getElementById("reader").innerHTML = "";
+
+
+      /*
+      DEPOIS:
+      REGISTRA O PONTO.
+      */
+
+      registrarPonto(texto);
+
+    })
+
+    .catch(function(error) {
+
+      console.log("Erro ao parar câmera:", error);
+
+      /*
+      Mesmo se houver erro ao parar,
+      continuamos registrando o ponto.
+      */
+
+      registrarPonto(texto);
+
+    });
+
+}
+
+
+/* =====================================
+   REGISTRAR PONTO
+===================================== */
+
+function registrarPonto(texto) {
 
   const clube =
-    texto
-      .trim()
-      .toUpperCase();
+    texto.trim().toUpperCase();
 
 
   const resultado =
@@ -230,6 +240,8 @@ function qrLido(texto) {
 
     .then(function(dados) {
 
+      console.log("Resposta:", dados);
+
 
       if (dados.startsWith("OK:")) {
 
@@ -242,16 +254,6 @@ function qrLido(texto) {
         resultado.className =
           "sucesso";
 
-
-        /*
-         Mostra botão para
-         próxima leitura.
-        */
-
-        document.getElementById("novoScan")
-          .style.display = "block";
-
-
       }
 
       else {
@@ -263,15 +265,23 @@ function qrLido(texto) {
         resultado.className =
           "erro";
 
-
-        document.getElementById("novoScan")
-          .style.display = "block";
-
       }
+
+
+      /*
+      MOSTRA O BOTÃO
+      PARA UMA NOVA LEITURA.
+      */
+
+      document.getElementById("novoScan")
+        .style.display = "block";
 
     })
 
-    .catch(function(erro) {
+
+    .catch(function(error) {
+
+      console.log(error);
 
       resultado.innerHTML =
         "❌ ERRO DE CONEXÃO";
@@ -289,33 +299,10 @@ function qrLido(texto) {
 
 
 /* =====================================
-   NOVA LEITURA
-===================================== */
-
-function novoScan() {
-
-  /*
-   Limpa o leitor antigo
-  */
-
-  document.getElementById("reader").innerHTML = "";
-
-
-  /*
-   Começa uma nova leitura
-  */
-
-  iniciarScanner();
-
-}
-
-
-/* =====================================
    PRIMEIRA LEITURA
 ===================================== */
 
 iniciarScanner();
-
 
 </script>
 
