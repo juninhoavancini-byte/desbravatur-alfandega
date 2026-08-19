@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Desbravatur - Alfândega</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #f2f2f2;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 5px;
+}
+
+h2 {
+  font-weight: normal;
+}
+
+#reader {
+  max-width: 500px;
+  margin: 20px auto;
+  background: white;
+  padding: 10px;
+  border-radius: 15px;
+}
+
+#resultado {
+
+  background: white;
+
+  padding: 25px;
+
+  border-radius: 15px;
+
+  max-width: 500px;
+
+  margin: 20px auto;
+
+  font-size: 24px;
+
+  font-weight: bold;
+
+}
+
+.sucesso {
+  color: green;
+}
+
+.erro {
+  color: red;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>✈️ DESBRAVATUR</h1>
+
+<h2>ALFÂNDEGA</h2>
+
+<div id="reader"></div>
+
+<div id="resultado">
+
+📷 Aponte para o QR Code
+
+</div>
+
+
+<script>
+
+
+/* =====================================
+   SEU APPS SCRIPT
+===================================== */
+
+const APPS_SCRIPT =
+"https://script.google.com/macros/s/AKfycbwFODAHRarZcpTXxwmrQDRN57RnWlis0amVqkj0zcEpB9gCHz_Ca3s28tkZBNN2aLF6sQ/exec";
+
+
+let bloqueado = false;
+
+
+/* =====================================
+   QUANDO LER O QR CODE
+===================================== */
+
+function qrLido(texto) {
+
+  if (bloqueado) {
+    return;
+  }
+
+  bloqueado = true;
+
+
+  const clube =
+    texto
+      .trim()
+      .toUpperCase();
+
+
+  const resultado =
+    document.getElementById("resultado");
+
+
+  resultado.innerHTML =
+    "⏳ Registrando...";
+
+
+  const url =
+    APPS_SCRIPT +
+    "?clube=" +
+    encodeURIComponent(clube);
+
+
+  fetch(url)
+
+    .then(function(resposta) {
+
+      return resposta.text();
+
+    })
+
+    .then(function(dados) {
+
+
+      if (dados.startsWith("OK:")) {
+
+        resultado.innerHTML =
+          "✅ " +
+          clube +
+          "<br><br>" +
+          "+1 PONTO";
+
+        resultado.className =
+          "sucesso";
+
+      }
+
+      else {
+
+        resultado.innerHTML =
+          "❌ " +
+          dados;
+
+        resultado.className =
+          "erro";
+
+      }
+
+
+      /*
+      Libera o próximo ticket
+      depois de 2 segundos.
+      */
+
+      setTimeout(function() {
+
+        bloqueado = false;
+
+        resultado.innerHTML =
+          "📷 Aponte para o próximo ticket";
+
+        resultado.className = "";
+
+      }, 2000);
+
+
+    })
+
+    .catch(function(erro) {
+
+      resultado.innerHTML =
+        "❌ Erro de conexão";
+
+      resultado.className =
+        "erro";
+
+      bloqueado = false;
+
+    });
+
+}
+
+
+/* =====================================
+   LEITOR
+===================================== */
+
+const leitor =
+  new Html5QrcodeScanner(
+
+    "reader",
+
+    {
+
+      fps: 10,
+
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+
+    },
+
+    false
+
+  );
+
+
+leitor.render(
+
+  qrLido,
+
+  function() {
+
+    // Ignora erros de procura.
+
+  }
+
+);
+
+
+</script>
+
+</body>
+
+</html>
