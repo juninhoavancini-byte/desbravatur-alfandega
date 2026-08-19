@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+      content="width=device-width, initial-scale=1.0">
 
 <title>Desbravatur - Alfândega</title>
 
@@ -64,17 +64,44 @@ h2 {
   color: red;
 }
 
+#novoScan {
+
+  display: none;
+
+  margin: 20px auto;
+
+  padding: 18px 35px;
+
+  font-size: 20px;
+
+  font-weight: bold;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: #1b7f3a;
+
+  color: white;
+
+  cursor: pointer;
+
+}
+
 </style>
 
 </head>
 
 <body>
 
+
 <h1>✈️ DESBRAVATUR</h1>
 
 <h2>ALFÂNDEGA</h2>
 
+
 <div id="reader"></div>
+
 
 <div id="resultado">
 
@@ -83,31 +110,94 @@ h2 {
 </div>
 
 
+<button id="novoScan" onclick="novoScan()">
+
+📷 ESCANEAR PRÓXIMO
+
+</button>
+
+
 <script>
 
-
-/* =====================================
-   SEU APPS SCRIPT
-===================================== */
 
 const APPS_SCRIPT =
 "https://script.google.com/macros/s/AKfycbwFODAHRarZcpTXxwmrQDRN57RnWlis0amVqkj0zcEpB9gCHz_Ca3s28tkZBNN2aLF6sQ/exec";
 
 
-let bloqueado = false;
+let scanner = null;
+
+let lendo = true;
 
 
 /* =====================================
-   QUANDO LER O QR CODE
+   INICIAR LEITOR
+===================================== */
+
+function iniciarScanner() {
+
+  lendo = true;
+
+  document.getElementById("novoScan").style.display =
+    "none";
+
+  document.getElementById("resultado").innerHTML =
+    "📷 Aponte para o QR Code";
+
+  document.getElementById("resultado").className = "";
+
+
+  scanner = new Html5QrcodeScanner(
+
+    "reader",
+
+    {
+
+      fps: 10,
+
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+
+    },
+
+    false
+
+  );
+
+
+  scanner.render(
+
+    qrLido,
+
+    function() {
+      // Ignora erros normais
+    }
+
+  );
+
+}
+
+
+/* =====================================
+   QR CODE LIDO
 ===================================== */
 
 function qrLido(texto) {
 
-  if (bloqueado) {
+  if (!lendo) {
     return;
   }
 
-  bloqueado = true;
+  lendo = false;
+
+
+  /*
+   IMPORTANTE:
+   Para a câmera imediatamente.
+  */
+
+  scanner.clear();
 
 
   const clube =
@@ -121,7 +211,7 @@ function qrLido(texto) {
 
 
   resultado.innerHTML =
-    "⏳ Registrando...";
+    "⏳ Registrando ponto...";
 
 
   const url =
@@ -152,6 +242,16 @@ function qrLido(texto) {
         resultado.className =
           "sucesso";
 
+
+        /*
+         Mostra botão para
+         próxima leitura.
+        */
+
+        document.getElementById("novoScan")
+          .style.display = "block";
+
+
       }
 
       else {
@@ -163,37 +263,25 @@ function qrLido(texto) {
         resultado.className =
           "erro";
 
+
+        document.getElementById("novoScan")
+          .style.display = "block";
+
       }
-
-
-      /*
-      Libera o próximo ticket
-      depois de 2 segundos.
-      */
-
-      setTimeout(function() {
-
-        bloqueado = false;
-
-        resultado.innerHTML =
-          "📷 Aponte para o próximo ticket";
-
-        resultado.className = "";
-
-      }, 2000);
-
 
     })
 
     .catch(function(erro) {
 
       resultado.innerHTML =
-        "❌ Erro de conexão";
+        "❌ ERRO DE CONEXÃO";
 
       resultado.className =
         "erro";
 
-      bloqueado = false;
+
+      document.getElementById("novoScan")
+        .style.display = "block";
 
     });
 
@@ -201,41 +289,32 @@ function qrLido(texto) {
 
 
 /* =====================================
-   LEITOR
+   NOVA LEITURA
 ===================================== */
 
-const leitor =
-  new Html5QrcodeScanner(
+function novoScan() {
 
-    "reader",
+  /*
+   Limpa o leitor antigo
+  */
 
-    {
-
-      fps: 10,
-
-      qrbox: {
-        width: 250,
-        height: 250
-      }
-
-    },
-
-    false
-
-  );
+  document.getElementById("reader").innerHTML = "";
 
 
-leitor.render(
+  /*
+   Começa uma nova leitura
+  */
 
-  qrLido,
+  iniciarScanner();
 
-  function() {
+}
 
-    // Ignora erros de procura.
 
-  }
+/* =====================================
+   PRIMEIRA LEITURA
+===================================== */
 
-);
+iniciarScanner();
 
 
 </script>
