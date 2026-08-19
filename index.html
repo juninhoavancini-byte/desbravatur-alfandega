@@ -57,15 +57,27 @@ h2 {
 }
 
 #novoScan {
+
   display: none;
+
   margin: 20px auto;
+
   padding: 18px 35px;
+
   font-size: 20px;
+
   font-weight: bold;
+
   border: none;
+
   border-radius: 12px;
+
   background: #1b7f3a;
+
   color: white;
+
+  cursor: pointer;
+
 }
 
 </style>
@@ -81,15 +93,20 @@ h2 {
 <div id="reader"></div>
 
 <div id="resultado">
+
 📷 Aponte para o QR Code
+
 </div>
 
-<button id="novoScan" onclick="iniciarScanner()">
+<button id="novoScan" onclick="novoScan()">
+
 📷 ESCANEAR PRÓXIMO
+
 </button>
 
 
 <script>
+
 
 const APPS_SCRIPT =
 "https://script.google.com/macros/s/AKfycbwFODAHRarZcpTXxwmrQDRN57RnWlis0amVqkj0zcEpB9gCHz_Ca3s28tkZBNN2aLF6sQ/exec";
@@ -97,46 +114,129 @@ const APPS_SCRIPT =
 
 let scanner = null;
 
-let processando = false;
+
+/*
+================================================
+TRAVA PRINCIPAL
+================================================
+
+false = pode ler
+
+true = já leu e está bloqueado
+
+*/
+
+let bloqueado = false;
 
 
-/* =====================================
-   INICIAR CÂMERA
-===================================== */
+/*
+================================================
+INICIAR LEITOR
+================================================
+*/
 
 function iniciarScanner() {
 
-  processando = false;
 
-  document.getElementById("novoScan").style.display = "none";
+  bloqueado = false;
+
+
+  document.getElementById("novoScan").style.display =
+    "none";
+
 
   document.getElementById("resultado").innerHTML =
     "📷 Aponte para o QR Code";
 
-  document.getElementById("resultado").className = "";
 
-  document.getElementById("reader").innerHTML = "";
+  document.getElementById("resultado").className =
+    "";
 
 
-  scanner = new Html5Qrcode("reader");
+  document.getElementById("reader").innerHTML =
+    "";
+
+
+  scanner =
+    new Html5Qrcode("reader");
 
 
   scanner.start(
 
-    { facingMode: "environment" },
+    {
+      facingMode: "environment"
+    },
 
     {
       fps: 10,
+
       qrbox: {
         width: 250,
         height: 250
       }
+
     },
 
-    qrLido,
+    function(decodedText) {
+
+      /*
+      ============================================
+      PRIMEIRA COISA:
+      VERIFICAR A TRAVA
+      ============================================
+      */
+
+      if (bloqueado) {
+        return;
+      }
+
+
+      /*
+      ============================================
+      TRAVA IMEDIATAMENTE
+      ============================================
+      */
+
+      bloqueado = true;
+
+
+      /*
+      ============================================
+      AGORA PARA A CÂMERA
+      ============================================
+      */
+
+      scanner.stop()
+
+        .then(function() {
+
+          document.getElementById("reader").innerHTML =
+            "";
+
+        })
+
+        .catch(function() {
+
+          document.getElementById("reader").innerHTML =
+            "";
+
+        });
+
+
+      /*
+      ============================================
+      REGISTRA APENAS UMA VEZ
+      ============================================
+      */
+
+      registrar(decodedText);
+
+    },
 
     function(errorMessage) {
-      // Ignora erros normais de procura
+
+      // Ignora erros normais.
+
     }
 
   )
@@ -154,66 +254,19 @@ function iniciarScanner() {
 }
 
 
-/* =====================================
-   QR CODE LIDO
-===================================== */
+/*
+================================================
+REGISTRAR PONTO
+================================================
+*/
 
-function qrLido(texto) {
+function registrar(texto) {
 
-  if (processando) {
-    return;
-  }
-
-  processando = true;
-
-
-  /*
-  PRIMEIRO:
-  PARA A CÂMERA.
-  */
-
-  scanner.stop()
-
-    .then(function() {
-
-      console.log("Câmera parada.");
-
-      document.getElementById("reader").innerHTML = "";
-
-
-      /*
-      DEPOIS:
-      REGISTRA O PONTO.
-      */
-
-      registrarPonto(texto);
-
-    })
-
-    .catch(function(error) {
-
-      console.log("Erro ao parar câmera:", error);
-
-      /*
-      Mesmo se houver erro ao parar,
-      continuamos registrando o ponto.
-      */
-
-      registrarPonto(texto);
-
-    });
-
-}
-
-
-/* =====================================
-   REGISTRAR PONTO
-===================================== */
-
-function registrarPonto(texto) {
 
   const clube =
-    texto.trim().toUpperCase();
+    texto
+      .trim()
+      .toUpperCase();
 
 
   const resultado =
@@ -232,18 +285,20 @@ function registrarPonto(texto) {
 
   fetch(url)
 
-    .then(function(resposta) {
+    .then(function(response) {
 
-      return resposta.text();
+      return response.text();
 
     })
 
-    .then(function(dados) {
-
-      console.log("Resposta:", dados);
+    .then(function(resposta) {
 
 
-      if (dados.startsWith("OK:")) {
+      console.log(resposta);
+
+
+      if (resposta.startsWith("OK:")) {
+
 
         resultado.innerHTML =
           "✅ " +
@@ -251,58 +306,88 @@ function registrarPonto(texto) {
           "<br><br>" +
           "+1 PONTO";
 
+
         resultado.className =
           "sucesso";
+
 
       }
 
       else {
 
+
         resultado.innerHTML =
           "❌ " +
-          dados;
+          resposta;
+
 
         resultado.className =
           "erro";
+
 
       }
 
 
       /*
-      MOSTRA O BOTÃO
-      PARA UMA NOVA LEITURA.
+      ============================================
+      MOSTRA BOTÃO
+      ============================================
       */
 
       document.getElementById("novoScan")
-        .style.display = "block";
+        .style.display =
+        "block";
+
 
     })
 
-
     .catch(function(error) {
 
-      console.log(error);
 
       resultado.innerHTML =
-        "❌ ERRO DE CONEXÃO";
+        "❌ Erro de conexão";
+
 
       resultado.className =
         "erro";
 
 
       document.getElementById("novoScan")
-        .style.display = "block";
+        .style.display =
+        "block";
+
 
     });
 
 }
 
 
-/* =====================================
-   PRIMEIRA LEITURA
-===================================== */
+/*
+================================================
+NOVO SCAN
+================================================
+*/
+
+function novoScan() {
+
+
+  document.getElementById("reader").innerHTML =
+    "";
+
+
+  iniciarScanner();
+
+}
+
+
+/*
+================================================
+PRIMEIRA INICIALIZAÇÃO
+================================================
+*/
 
 iniciarScanner();
+
 
 </script>
 
