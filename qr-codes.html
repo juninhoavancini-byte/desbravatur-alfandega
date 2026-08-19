@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Desbravatur - QR Codes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<style>
+
+body {
+
+  font-family: Arial, sans-serif;
+
+  background: #f2f2f2;
+
+  text-align: center;
+
+  margin: 0;
+
+  padding: 30px;
+
+}
+
+h1 {
+
+  margin-bottom: 5px;
+
+}
+
+.subtitulo {
+
+  margin-bottom: 30px;
+
+}
+
+.container {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(280px, 1fr));
+
+  gap: 25px;
+
+  max-width: 1000px;
+
+  margin: auto;
+
+}
+
+.card {
+
+  background: white;
+
+  padding: 25px;
+
+  border-radius: 15px;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.15);
+
+}
+
+.nome {
+
+  font-size: 24px;
+
+  font-weight: bold;
+
+  margin-bottom: 20px;
+
+}
+
+.codigo {
+
+  display: flex;
+
+  justify-content: center;
+
+  margin: 10px auto 20px;
+
+}
+
+.texto {
+
+  font-size: 14px;
+
+  color: #555;
+
+}
+
+@media print {
+
+  body {
+
+    background: white;
+
+    padding: 10px;
+
+  }
+
+  .card {
+
+    box-shadow: none;
+
+    border: 1px solid #ccc;
+
+    break-inside: avoid;
+
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<h1>✈️ DESBRAVATUR</h1>
+
+<div class="subtitulo">
+
+  <h2>QR CODES OFICIAIS</h2>
+
+  <p>Alfândega — Pontuação dos Clubes</p>
+
+</div>
+
+
+<div class="container">
+
+
+  <!-- CONTINENTES -->
+
+  <div class="card">
+
+    <div class="nome">
+
+      🌎 CONTINENTES
+
+    </div>
+
+    <div
+      id="qr-continentes"
+      class="codigo">
+    </div>
+
+    <div class="texto">
+
+      Código: CONTINENTES
+
+    </div>
+
+  </div>
+
+
+
+  <!-- TERRAS -->
+
+  <div class="card">
+
+    <div class="nome">
+
+      🌍 TERRAS
+
+    </div>
+
+    <div
+      id="qr-terras"
+      class="codigo">
+    </div>
+
+    <div class="texto">
+
+      Código: TERRAS
+
+    </div>
+
+  </div>
+
+
+
+  <!-- LEÕES DA COLINA -->
+
+  <div class="card">
+
+    <div class="nome">
+
+      🦁 LEÕES DA COLINA
+
+    </div>
+
+    <div
+      id="qr-leoes"
+      class="codigo">
+    </div>
+
+    <div class="texto">
+
+      Código: LEOES DA COLINA
+
+    </div>
+
+  </div>
+
+
+
+  <!-- SILVESTRES -->
+
+  <div class="card">
+
+    <div class="nome">
+
+      🌲 SILVESTRES
+
+    </div>
+
+    <div
+      id="qr-silvestres"
+      class="codigo">
+    </div>
+
+    <div class="texto">
+
+      Código: SILVESTRES
+
+    </div>
+
+  </div>
+
+
+
+  <!-- LUZES DO UNIVERSO -->
+
+  <div class="card">
+
+    <div class="nome">
+
+      ✨ LUZES DO UNIVERSO
+
+    </div>
+
+    <div
+      id="qr-luzes"
+      class="codigo">
+    </div>
+
+    <div class="texto">
+
+      Código: LUZES DO UNIVERSO
+
+    </div>
+
+  </div>
+
+
+
+  <!-- DISTRITO -->
+
+  <div class="card">
+
+    <div class="nome">
+
+      🏕️ DISTRITO
+
+    </div>
+
+    <div
+      id="qr-distrito"
+      class="codigo">
+    </div>
+
+    <div class="texto">
+
+      Código: DISTRITO
+
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+
+function criarQR(id, texto) {
+
+  new QRCode(
+
+    document.getElementById(id),
+
+    {
+
+      text: texto,
+
+      width: 220,
+
+      height: 220,
+
+      correctLevel:
+        QRCode.CorrectLevel.H
+
+    }
+
+  );
+
+}
+
+
+/* ================================
+   GERAR OS 6 QR CODES
+================================ */
+
+
+criarQR(
+  "qr-continentes",
+  "CONTINENTES"
+);
+
+
+criarQR(
+  "qr-terras",
+  "TERRAS"
+);
+
+
+criarQR(
+  "qr-leoes",
+  "LEOES DA COLINA"
+);
+
+
+criarQR(
+  "qr-silvestres",
+  "SILVESTRES"
+);
+
+
+criarQR(
+  "qr-luzes",
+  "LUZES DO UNIVERSO"
+);
+
+
+criarQR(
+  "qr-distrito",
+  "DISTRITO"
+);
+
+
+</script>
+
+
+</body>
+
+</html>
